@@ -2,7 +2,7 @@
     <v-container fluid fill-height>
         <v-layout align-center justify-center>
             <v-flex style="max-width: 500px">
-                <v-form @submit.prevent="login">
+                <v-form @submit.prevent="submit">
                     <v-card class="elevation-3">
                         <v-toolbar dark color="primary">
                             <v-toolbar-title>Login</v-toolbar-title>
@@ -10,9 +10,7 @@
                         </v-toolbar>
 
                         <v-card-text>
-                            <div class="errorMessage" v-if="errorMessage">
-                                {{ errorMessage }}
-                            </div>
+                            <v-alert v-if="errorMessage" color="red" type="error" dense>{{ errorMessage }}</v-alert>
 
                             <v-text-field
                                 name="username"
@@ -36,7 +34,10 @@
                         </v-card-actions>
 
                         <div class="pa-4 text-center">
-                            <div>Don't have an account? <router-link to="/register">Sign up</router-link></div>
+                            <div>
+                                Don't have an account?
+                                <router-link to="/register">Sign up</router-link>
+                            </div>
                             <div class="pt-4">
                                 <router-link to="/remind">Forgot your password?</router-link>
                             </div>
@@ -67,37 +68,19 @@ export default class extends Vue {
         this.errorMessage = "";
     }
 
-    public login() {
-        alert("OK")
-        // app.loginService
-        //     .login(this.username, this.password)
-        //     .then((result: any) => {
-        //         app.pushNotificationService
-        //             .registerToken()
-        //             .then(response => {
-        //                 console.log(response);
-        //             })
-        //             .catch(e => {
-        //                 console.log(e);
-        //             });
+    public async submit() {
+        try {
+            const result = await this.$app.auth.loginWithUsernameAndPassword(
+                this.username,
+                this.password
+            );
 
-        //         if (result.user_type) {
-        //             if (result.user_type === UserType.SuperAdministrator) {
-        //                 this.$router.push({ name: "superadmin_home" });
-        //             } else if (result.user_type === UserType.Administrator) {
-        //                 this.$router.push({ name: "admin_home" });
-        //             } else if (result.user_type === UserType.Staff) {
-        //                 this.$router.push({ name: "staff_home" });
-        //             }
-        //         }
-        //     })
-        //     .catch(error => {
-        //         if ("errorMessage" in error) {
-        //             this.errorMessage = error.errorMessage;
-        //         } else {
-        //             this.errorMessage = "";
-        //         }
-        //     });
+            if (result == null) {
+                this.errorMessage = "Invalid user name or password";
+            }
+        } catch (error) {
+            this.$app.logger.debug(error);
+        }
     }
 }
 </script>

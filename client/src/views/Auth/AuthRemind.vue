@@ -2,7 +2,7 @@
     <v-container fluid fill-height>
         <v-layout align-center justify-center>
             <v-flex style="max-width: 500px">
-                <v-form @submit.prevent="remind">
+                <v-form @submit.prevent="submit">
                     <v-card class="elevation-3">
                         <v-toolbar dark color="primary">
                             <v-toolbar-title>Reset password</v-toolbar-title>
@@ -50,7 +50,7 @@ export default class extends Vue {
         this.errorMessage = "";
     }
 
-    public remind() {
+    public submit() {
 
     }
 }

@@ -26,7 +26,7 @@ export class Repository<T extends Entity> {
     }
 
     public async removeRange(items: T[]): Promise<any> {
-        const models = items.map((e) => {id: e.id});
+        const models = items.map((e) => {e.id});
         const response = await this.client.delete("", {models})
     }
 

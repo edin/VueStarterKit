@@ -1,10 +1,12 @@
 import { IRestClientSettings, RestClient } from "@/kit/Rest/RestClient";
 import { AuthService } from "@/kit/Services/AuthService";
 import { IAuthService } from "@/kit/Services/AuthServiceTypes";
+import { ILogger, Logger } from "./kit/Logger/Logger";
 
-class Application {
+export class Application {
     public readonly client: RestClient = new RestClient(this.restClientSettings);
     public readonly auth: IAuthService = new AuthService(this.client);
+    public readonly logger: ILogger = Logger.getLogger("");
 
     public get restClientSettings(): IRestClientSettings {
         const app = this;
