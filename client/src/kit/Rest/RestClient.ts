@@ -1,13 +1,18 @@
 export interface IClientSettings {
     getUrl(path: string): string;
-    getHeaders(): any;
-    startLoading(): void;
-    stopLoading(): void;
+    getHeaders(): Record<string, string>;
+    onStartLoading(): void;
+    onStopLoading(): void;
 }
 
-export class JsonResponse {
+export interface IRestOptions {
+    bodySerializer?: (data: any) => string;
+    responseMapper?: <T>(data: any) => T
+}
+
+export class JsonResponse<T = any> {
     public constructor(
-        public readonly data: any,
+        public readonly data: T | null,
         public readonly ok: boolean,
         public readonly status: number,
         public readonly statusText: string,
@@ -15,31 +20,50 @@ export class JsonResponse {
     ) {
     }
 
-    public static async fromResponse(response: Response): Promise<JsonResponse> {
-        let data: any = null;
-        try {
-            data = await response.json();
-        } catch (e) {
-            data = null;
+    public asType<T>() : JsonResponse<T> {
+        const data: any = this.data;
+        if (data) {
+            return new JsonResponse<T>(data as T, this.ok, this.status, this.statusText, this.headers);
         }
-        return new JsonResponse(data, response.ok, response.status, response.statusText, response.headers);
+        throw new Error("Data is null");
     }
 }
 
 export class RestClient {
-    public constructor(private clientSettings: IClientSettings) {
+    public constructor(private clientSettings: IClientSettings) { }
+
+    private serializeBody(data: any) {
+        return JSON.stringify(data);
     }
 
-    private async execute(method: string, path: string, data: any): Promise<JsonResponse> {
+    private addDefaultHeaders(headers: Record<string, string>, defaultHeaders: Record<string, string>) {
+        const headerKeys = Object.keys(headers).map(key => key.toLowerCase());
 
-        this.clientSettings.startLoading();
+        const result = {...headers};
+
+        for (let key in Object.keys(defaultHeaders)) {
+            const lowerKey = key.toLowerCase();
+            if (headerKeys.indexOf(lowerKey) === -1) {
+                result[key] = defaultHeaders[key];
+            }
+        }
+
+        return result;
+    }
+
+    private async execute(method: string, path: string, data: any ): Promise<JsonResponse> {
+        this.clientSettings.onStartLoading();
 
         let url: string = this.clientSettings.getUrl(path);
         let headers: any = this.clientSettings.getHeaders();
         let body: any = null;
 
+        headers = this.addDefaultHeaders(headers, {
+            "Accept": "application/json"
+        });
+
         if (method !== "GET") {
-            body = JSON.stringify(data);
+            body = this.serializeBody(data);
         }
 
         const response: any = await fetch(url, {
@@ -48,9 +72,17 @@ export class RestClient {
             body: body
         });
 
-        this.clientSettings.stopLoading();
+        let jsonData: any = null;
 
-        return JsonResponse.fromResponse(response);
+        try {
+            jsonData = await response.json();
+        } catch (e) {
+            jsonData = null;
+        }
+
+        this.clientSettings.onStopLoading();
+
+        return new JsonResponse(jsonData, response.ok, response.status, response.statusText, response.headers);
     }
 
     public async get(path: string, data: any = null): Promise<JsonResponse> {
@@ -69,3 +101,4 @@ export class RestClient {
         return await this.execute("DELETE", path, data);
     }
 }
+

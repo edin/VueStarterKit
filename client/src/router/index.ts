@@ -7,10 +7,7 @@ import About from "@/views/About.vue";
 import Trash from "@/views/Trash.vue";
 import Spam from "@/views/Spam.vue";
 
-import AuthLogin from "@/views/Auth/AuthLogin.vue";
-import AuthRegister from "@/views/Auth/AuthRegister.vue";
-import AuthRemind from "@/views/Auth/AuthRemind.vue";
-import AuthResetPassword from "@/views/Auth/AuthResetPassword.vue";
+import {AuthModule} from "@/views/Auth/AuthModule";
 
 Vue.use(VueRouter);
 
@@ -44,28 +41,7 @@ const routes: Array<RouteConfig> = [
     {
         path: "/",
         component: AuthLayout,
-        children: [
-            {
-                path: "/login",
-                name: "Login",
-                component: AuthLogin,
-            },
-            {
-                path: "/remind",
-                name: "Remind",
-                component: AuthRemind,
-            },
-            {
-                path: "/register",
-                name: "Register",
-                component: AuthRegister,
-            },
-            {
-                path: "/reset-password",
-                name: "ResetPassword",
-                component: AuthResetPassword,
-            },
-        ],
+        children: AuthModule.getRoutes()
     },
 ];
 

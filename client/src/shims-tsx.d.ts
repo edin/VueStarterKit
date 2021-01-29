@@ -1,4 +1,5 @@
 import Vue, { VNode } from 'vue'
+import { RestClient } from './kit/Rest/RestClient';
 
 declare global {
   namespace JSX {
@@ -10,4 +11,7 @@ declare global {
       [elem: string]: any
     }
   }
+
+  declare const process: any;
 }
+
