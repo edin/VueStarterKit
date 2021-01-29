@@ -20,13 +20,13 @@ export class JsonResponse<T = any> {
     ) {
     }
 
-    public asType<T>() : JsonResponse<T> {
-        const data: any = this.data;
-        if (data) {
-            return new JsonResponse<T>(data as T, this.ok, this.status, this.statusText, this.headers);
-        }
-        throw new Error("Data is null");
-    }
+    // public asType<T>(): JsonResponse<T> {
+    //     const data: any = this.data;
+    //     if (data) {
+    //         return new JsonResponse<T>(data as T, this.ok, this.status, this.statusText, this.headers);
+    //     }
+    //     throw new Error("Data is null");
+    // }
 }
 
 export class RestClient {
@@ -39,7 +39,7 @@ export class RestClient {
     private addDefaultHeaders(headers: Record<string, string>, defaultHeaders: Record<string, string>) {
         const headerKeys = Object.keys(headers).map(key => key.toLowerCase());
 
-        const result = {...headers};
+        const result = { ...headers };
 
         for (let key in Object.keys(defaultHeaders)) {
             const lowerKey = key.toLowerCase();
@@ -51,7 +51,8 @@ export class RestClient {
         return result;
     }
 
-    private async execute(method: string, path: string, data: any ): Promise<JsonResponse> {
+    private async execute(method: string, path: string, data: any): Promise<JsonResponse> {
+
         this.clientSettings.onStartLoading();
 
         let url: string = this.clientSettings.getUrl(path);

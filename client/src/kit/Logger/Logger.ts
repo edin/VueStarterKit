@@ -46,7 +46,7 @@ export class NullLogger implements ILogDriver {
 
 export class ConsoleLogger implements ILogDriver {
     public log(level: Level, message: string, ...data: any[]): void {
-        switch(level) {
+        switch (level) {
             case Level.INFO: {
                 console.info(message, ...data)
             } break;
@@ -70,10 +70,10 @@ export class MultiLogger implements ILogDriver {
     constructor(private targets: LogTarget[]) { }
 
     public log(level: Level, message: string, ...data: any[]): void {
-        for(let target of this.targets) {
-           if (target.matches(level)) {
+        for (let target of this.targets) {
+            if (target.matches(level)) {
                 target.logger.log(level, message, ...data);
-           }
+            }
         }
     }
 }
@@ -82,7 +82,7 @@ export class Logger implements ILogger {
     private static logger?: ILogDriver;
     private static loggerFactory?: LoggerFactory;
 
-    constructor(private target: ILogDriver, private name = "") {}
+    constructor(private target: ILogDriver, private name = "") { }
 
     public getName(): string {
         return this.name;
