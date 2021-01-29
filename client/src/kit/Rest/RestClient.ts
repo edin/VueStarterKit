@@ -1,4 +1,4 @@
-export interface IClientSettings {
+export interface IRestClientSettings {
     getUrl(path: string): string;
     getHeaders(): Record<string, string>;
     onStartLoading(): void;
@@ -30,7 +30,7 @@ export class JsonResponse<T = any> {
 }
 
 export class RestClient {
-    public constructor(private clientSettings: IClientSettings) { }
+    public constructor(private clientSettings: IRestClientSettings) { }
 
     private serializeBody(data: any) {
         return JSON.stringify(data);

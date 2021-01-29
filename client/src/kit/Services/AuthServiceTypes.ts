@@ -32,4 +32,5 @@ export interface IAuthService {
     logout(): Promise<any>;
     resetPassword(username: string): Promise<IResetPasswordResult>;
     verifyAccount(verificationCode: string): Promise<IVerifyAccountResult>;
+    getCurrentUser(): IAuthUser|null;
 }

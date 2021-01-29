@@ -12,7 +12,7 @@ export class AuthService implements IAuthService
         this.storage = window.localStorage;
     }
 
-    async getCurrentUser(): Promise<IAuthUser|null> {
+    getCurrentUser(): IAuthUser|null {
         let result = this.storage.getItem(AuthService.AuthInfoKey);
         if (result) {
             try{
