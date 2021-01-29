@@ -10,21 +10,21 @@ export type LoggerFactory = (name: string) => ILogger;
 
 export class LogMessage {
     public level: Level = Level.INFO;
-    public message: string = "";
+    public name: string = "";
     public data: any[] = [];
 }
 
 export interface ILogDriver {
-    log(level: Level, message: string, ...data: any[]): void
+    log(level: Level, name: string, ...data: any[]): void
 }
 
 export interface ILogger {
     getName(): string;
-    info(message: string, ...data: any[]): void
-    log(message: string, ...data: any[]): void
-    debug(message: string, ...data: any[]): void
-    warn(message: string, ...data: any[]): void
-    error(message: string, ...data: any[]): void
+    info(...data: any[]): void
+    log(...data: any[]): void
+    debug(...data: any[]): void
+    warn(...data: any[]): void
+    error(...data: any[]): void
 }
 
 export class LogTarget {
@@ -39,28 +39,33 @@ export class LogTarget {
 }
 
 export class NullLogger implements ILogDriver {
-    public log(level: Level, message: string, ...data: any[]): void {
+    public log(level: Level, name: string, ...data: any[]): void {
         // Does nothing
     }
 }
 
 export class ConsoleLogger implements ILogDriver {
-    public log(level: Level, message: string, ...data: any[]): void {
+    public log(level: Level, name: string, ...data: any[]): void {
+        let params = [...data];
+        if (name && name != "") {
+            params = [name, ...data];
+        }
+
         switch (level) {
             case Level.INFO: {
-                console.info(message, ...data)
+                console.info(...params)
             } break;
             case Level.LOG: {
-                console.log(message, ...data);
+                console.log(...params);
             } break;
             case Level.DEBUG: {
-                console.debug(message, ...data);
+                console.debug(...params);
             } break;
             case Level.WARN: {
-                console.warn(message, ...data);
+                console.warn(...params);
             } break;
             case Level.ERROR: {
-                console.error(message, ...data);
+                console.error(...params);
             } break;
         }
     }
@@ -69,17 +74,17 @@ export class ConsoleLogger implements ILogDriver {
 export class MultiLogger implements ILogDriver {
     constructor(private targets: LogTarget[]) { }
 
-    public log(level: Level, message: string, ...data: any[]): void {
+    public log(level: Level, name: string, ...data: any[]): void {
         for (let target of this.targets) {
             if (target.matches(level)) {
-                target.logger.log(level, message, ...data);
+                target.logger.log(level, name, ...data);
             }
         }
     }
 }
 
 export class Logger implements ILogger {
-    private static logger?: ILogDriver;
+    private static default?: ILogger | null;
     private static loggerFactory?: LoggerFactory;
 
     constructor(private target: ILogDriver, private name = "") { }
@@ -88,24 +93,24 @@ export class Logger implements ILogger {
         return this.name;
     }
 
-    public info(message: string, ...data: any[]): void {
-        this.target.log(Level.INFO, message, ...data);
+    public info(...data: any[]): void {
+        this.target.log(Level.INFO, this.name, ...data);
     }
 
-    public log(message: string, ...data: any[]): void {
-        this.target.log(Level.LOG, message, ...data);
+    public log(...data: any[]): void {
+        this.target.log(Level.LOG, this.name, ...data);
     }
 
-    public debug(message: string, ...data: any[]): void {
-        this.target.log(Level.DEBUG, message, ...data);
+    public debug(...data: any[]): void {
+        this.target.log(Level.DEBUG, this.name, ...data);
     }
 
-    public warn(message: string, ...data: any[]): void {
-        this.target.log(Level.WARN, message, ...data);
+    public warn(...data: any[]): void {
+        this.target.log(Level.WARN, this.name, ...data);
     }
 
-    public error(message: string, ...data: any[]): void {
-        this.target.log(Level.ERROR, message, ...data);
+    public error(...data: any[]): void {
+        this.target.log(Level.ERROR, this.name, ...data);
     }
 
     public static getLogger(name: string): ILogger {
@@ -119,28 +124,36 @@ export class Logger implements ILogger {
         Logger.loggerFactory = loggerFactory;
     }
 
-    // static setLogger(logger: Logger | null ) {
-    //     Logger.logger = logger;
-    // }
+    static setLogger(logger: ILogger | null) {
+        Logger.default = logger;
+    }
 
-    // static info(message: string, ...data: any[]): void {
-    //     Logger.logger?.info(message, ...data);
-    // }
+    static getDefault(): ILogger {
+        if (Logger.default) {
+            return Logger.default;
+        }
+        Logger.default = Logger.getLogger("");
+        return Logger.default;
+    }
 
-    // static log(message: string, ...data: any[]): void {
-    //     Logger.logger?.log(message, ...data);
-    // }
+    static info(...data: any[]): void {
+        Logger.getDefault().info(...data);
+    }
 
-    // static debug(message: string, ...data: any[]): void {
-    //     Logger.logger?.debug(message, ...data);
-    // }
+    static log(...data: any[]): void {
+        Logger.getDefault().log(...data);
+    }
 
-    // static warn(message: string, ...data: any[]): void {
-    //     Logger.logger?.warn(message, ...data);
-    // }
+    static debug(message: string, ...data: any[]): void {
+        Logger.getDefault().debug(...data);
+    }
 
-    // static error(message: string, ...data: any[]): void {
-    //     Logger.logger?.error(message, ...data);
-    // }
+    static warn(...data: any[]): void {
+        Logger.getDefault().warn(...data);
+    }
+
+    static error(...data: any[]): void {
+        Logger.getDefault().error(...data);
+    }
 }
 
